@@ -97,15 +97,67 @@ const quizQuestions = [
     correctOption: 3,
   },
 ];
+const users = [
+  { id: 1, username: 'sagar', password: 'shinde', role: 'student' },
+  { id: 2, username: 'snehal', password: 'mishra', role: 'admin' },
+];
+app.get("/getAllQuestions",(req,res)=>{
+   res.send(quizQuestions)
+})
 
-app.get("/getAllQuestions", (req, res) => {
+app.get("/getQuestionById/:id",(req,res)=>{
+  id = req.params.id;
+  for (let i = 0; i < quizQuestions.length; i++) {
+    if(quizQuestions[i].id == id){
+     res.send(quizQuestions[i])
+    }
+ }
+})
+app.post('/signup/student', (req, res) => {
+  const { username, password } = req.body;
+  const newUser = { id: users.length + 1, username, password, role: 'student' };
+  users.push(newUser);
+  res.json(newUser);
+});
 
-  try {
-    console.log(res)
-    // Sending all Questions as response
-    res.send(quizQuestions);
-  } catch (error) {
-    
+app.post('/login/student', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password && u.role === 'student');
+  if (user) {
+    res.json({ message: 'Login successful', user });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
   }
 });
 
+
+app.post('/signup/admin', (req, res) => {
+  const { username, password } = req.body;
+  const newUser = { id: users.length + 1, username, password, role: 'admin' };
+  users.push(newUser);
+  res.json(newUser);
+});
+
+
+app.post('/login/admin', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password && u.role === 'admin');
+  if (user) {
+    console.log( 'Login successful');
+  } else {
+    console.log( 'Login fail');
+  }
+});
+
+app.post('/admin/add-question', (req, res) => {
+  const { username, password } = req.body;
+  const isAdmin = users.some(u => u.username === username && u.password === password && u.role === 'admin');
+  if (isAdmin) {
+    const newQuestion = req.body.question;
+    quizQuestions.push(newQuestion);
+    console.log("Question added successfully");
+    
+  } else {
+    console.log("not access");
+  }
+});
