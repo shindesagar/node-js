@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;1,500&display=swap" rel="stylesheet">
+    <style>
+       body{
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            /* background: #f5f5f5; */
+            background: #fff;
+            font-size: 14px;
+        }
+        h3{
+            margin: 0;
+        }
+        .btn{
+            background: darkmagenta;
+            border:1px solid darkmagenta;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 4px;
+            padding: 8px 10px;
+        }
+        ul{
+            float: left;
+            width: 100%;
+            list-style: none;
+            padding-left: 15px;
+        }
+        .wrapper{
+            max-width: 767px;
+            margin: 50px auto;
+            padding: 20px 10px;
+            border-radius:10px;
+            box-shadow: 1px 1px 8px rgba(0,0,0,0.5);
+        }
+        
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+        <div class="questionList" id="questionList"></div>
+        <button class="btn" onClick="submitFinalAnswer()" style="margin-top: 30px;">Submit Answer</button>
+    </div>  
+    <script>
+        let getAllQuestions = []
+        async function getQuestionListAPI(){
+            try{
+                const response = await fetch('http://localhost:3000/getAllQuestions');
+                const data = await response.json();
+                getQuestionList(data)
+                getAllQuestions = data;
+            }catch(err){
 
+            }
+        }
+        let selectedOptions = {};
+
+        function getQuestionList(data) {
+            data.map((res, i) => {
+                let questionList = document.getElementById('questionList');
+                let innerOptionsHTML = '';
+                res.options.forEach((option, index) => {
+                    innerOptionsHTML += `
+                        <div style="width:100%;float:left;padding:5px 0;">
+                            <div class="radio">
+                                <input id="${index}" name="question-${res.id}" type="radio" value="${index}" onClick="selectOption(${res.id}, ${index})">
+                                <label for="question-${res.id}" class="radio-label">${option}</label>
+                            </div>
+                       </div>
+                    `;
+                });
+                questionList.innerHTML += `
+                    <ul>
+                        <li>
+                            <h3>${i +1}). ${res.question}</h3>
+                            <div style="width:100%;float:left;margin-top:15px">
+                                ${innerOptionsHTML}
+                            </div>
+                        </li>
+                    </ul>
+                `;
+            });
+        }
+
+        function selectOption(questionId, selectedOptionIndex) {
+            selectedOptions[questionId] = selectedOptionIndex;
+        }
+        function submitFinalAnswer(){
+            for (let i = 0; i < getAllQuestions.length; i++) {
+                if(selectedOptions.hasOwnProperty(getAllQuestions[i].id)){
+                    getAllQuestions[i].correctOption = selectedOptions[getAllQuestions[i].id]
+                }
+            }
+        }
+        getQuestionListAPI()
+    </script>
+  </body>
+</html>
